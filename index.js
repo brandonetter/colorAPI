@@ -26,5 +26,5 @@ app.use("/color/:hex", (req, res) => {
     );
   }
 });
-
-app.listen(10000);
+const PORT = process.env.PORT || 3030;
+app.listen(PORT);
