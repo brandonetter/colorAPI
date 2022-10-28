@@ -1,0 +1,171 @@
+<style>
+  #colorDiv {
+    display: flex;
+    flex-direction: row;
+  }
+  #colorDiv div {
+    padding-left: 5px;
+  }
+</style>
+<body>
+  <label>RGB</label><input id="colorRGB" type="color" />
+
+  <label>HEX</label><input id="colorHex" value="#" />
+  <div id="colorDiv"></div>
+</body>
+<script>
+  let colorDiv = document.getElementById("colorDiv");
+  let colorPickHex = document.getElementById("colorHex");
+  let colorPickRGB = document.getElementById("colorRGB");
+  colorPickHex.addEventListener("input", () => {
+    if (colorPickHex.value[0] != "#") {
+      colorPickHex.value = "#" + colorPick.value;
+    }
+    if (colorPickHex.value[1] == "#") {
+      colorPickHex.value =
+        "#" + colorPickHex.value.slice(2, colorPickHex.length);
+    }
+
+    if (colorPickHex.value.length === 7) {
+      colorDiv.innerHTML = "";
+      showColors(colorPickHex.value.slice(1, colorPickHex.length));
+      window.history.pushState(
+        {},
+        "",
+        "/color/" + colorPickHex.value.slice(1, colorPickHex.length)
+      );
+    }
+  });
+  colorPickRGB.addEventListener("change", (e) => {
+    colorDiv.innerHTML = "";
+    v = e.target.value.slice(1, e.target.value.length);
+    let r = parseInt(v.slice(0, 2), 16);
+    let g = parseInt(v.slice(2, 4), 16);
+    let b = parseInt(v.slice(4, 6), 16);
+    console.log(r, g, b);
+    showColors([r, g, b], v);
+    window.history.pushState(
+      { state: "Color" },
+      "ok",
+      "/color/" + r + "/" + g + "/" + b
+    );
+  });
+  function showColors(v, rgb = undefined) {
+    if (!rgb) {
+      [h, s, l] = convertColor(v);
+    } else {
+      [h, s, l] = toHSL(v[0], v[1], v[2]);
+    }
+    let complementH = h + 180;
+    complementH %= 360;
+    let ourColor = makeNode("#" + (rgb || v));
+    let complement = makeNode(`hsl(${complementH},${s}%,${l}%)`);
+    close2H = h + 30;
+    close2H %= 360;
+    close3H = h - 30;
+    close3H %= 360;
+    triad1 = (h + 120) % 360;
+    triad2 = (h - 120) % 360;
+    console.log(l, "l");
+    monoL1 = l > 50 ? l * 0.82 : l * 1.18;
+    monoL2 = l > 50 ? l * 0.64 : l * 1.36;
+
+    closewalk1H = h + 15;
+    closewalk1H %= 360;
+    closewalk2H = h + 30;
+    closewalk2H %= 360;
+    let close2 = makeNode(`hsl(${close2H},${s}%,${l}%)`);
+    let close3 = makeNode(`hsl(${close3H},${s}%,${l}%)`);
+    let t1 = makeNode(`hsl(${triad1},${s}%,${l}%)`);
+    let t2 = makeNode(`hsl(${triad2},${s}%,${l}%)`);
+    let mono1 = makeNode(`hsl(${h},${s}%,${monoL1}%)`);
+    let mono2 = makeNode(`hsl(${h},${s}%,${monoL2}%)`);
+    let cw1 = makeNode(`hsl(${closewalk1H},${s}%,${monoL1}%)`);
+    let cw2 = makeNode(`hsl(${closewalk2H},${s}%,${monoL2}%)`);
+    let divSource = document.createElement("div");
+    div = divSource.cloneNode();
+    div.innerHTML = "Complimentary";
+
+    div.appendChild(ourColor.cloneNode());
+    div.appendChild(complement);
+    colorDiv.appendChild(div);
+    div2 = divSource.cloneNode();
+    div2.innerHTML += "Analagous";
+    div2.appendChild(ourColor.cloneNode());
+    div2.appendChild(close2);
+    div2.appendChild(close3);
+    colorDiv.appendChild(div2);
+    div3 = divSource.cloneNode();
+    div3.innerHTML += "Triad";
+    div3.appendChild(ourColor.cloneNode());
+    div3.appendChild(t1);
+    div3.appendChild(t2);
+    colorDiv.appendChild(div3);
+    div4 = divSource.cloneNode();
+    div4.innerHTML += "Monochromatic";
+    div4.appendChild(ourColor.cloneNode());
+    div4.appendChild(mono1);
+    div4.appendChild(mono2);
+    colorDiv.appendChild(div4);
+    div5 = divSource.cloneNode();
+    div5.innerHTML += "CloseWalk";
+    div5.appendChild(ourColor.cloneNode());
+    div5.appendChild(cw1);
+    div5.appendChild(cw2);
+    colorDiv.appendChild(div5);
+  }
+  function makeNode(color) {
+    let node = document.createElement("div");
+    node.style.width = "100px";
+    node.style.height = "100px";
+    node.style.backgroundColor = color;
+    return node;
+  }
+  function convertColor(v) {
+    let r = parseInt(v.slice(0, 2), 16);
+    let g = parseInt(v.slice(2, 4), 16);
+    let b = parseInt(v.slice(4, 6), 16);
+
+    // hsl.style.backgroundColor = `hsl(${h},${s}%,${l}%)`;
+    return toHSL(r, g, b);
+  }
+  function toHSL(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    let cmin = Math.min(r, g, b),
+      cmax = Math.max(r, g, b),
+      delta = cmax - cmin,
+      h = 0,
+      s = 0,
+      l = 0;
+
+    if (delta) {
+      switch (cmax) {
+        case r:
+          h = ((g - b) / delta) % 6;
+          break;
+        case g:
+          h = (b - r) / delta + 2;
+          break;
+        case b:
+          h = (r - g) / delta + 4;
+          break;
+      }
+    }
+    h = Math.round(h * 60);
+    h < 60 && (h = h + 360);
+
+    // Calculate lightness
+    l = (cmax + cmin) / 2;
+
+    // Calculate saturation
+    s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+
+    // Multiply l and s by 100
+    s = +(s * 100).toFixed(1);
+    l = +(l * 100).toFixed(1);
+
+    return [h, s, l];
+  }
+</script>
