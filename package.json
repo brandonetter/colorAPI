@@ -1,0 +1,20 @@
+{
+  "name": "colorapi",
+  "version": "1.0.0",
+  "description": "API that sends matching colors for design",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "colors",
+    "api",
+    "hex",
+    "hsl"
+  ],
+  "author": "Brandon Etter",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
