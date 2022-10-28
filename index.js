@@ -26,7 +26,7 @@ app.use("/color/:hex", (req, res) => {
     );
   }
 });
-app.use("/", (req, res) => {
+app.use("*", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 const PORT = process.env.PORT || 3030;
