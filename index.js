@@ -10,4 +10,4 @@ app.use("/color/:hex", (req, res) => {
   res.json(ob);
 });
 
-app.listen(3000);
+app.listen(80);
